@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA 3D — Sun'iy Intellekt Chat va 3D Visualizatsiya</title>
+    <meta name="description" content="Sun'iy intellekt bilan real-vaqtdagi 3D animatsiyalar va ovozli muloqot orqali suhbatlashing.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Prism Syntax Highlighting CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="theme-cyber">
+    <!-- WebGL Canvas Container for Three.js -->
+    <div id="canvas-container"></div>
+    <div id="particle-overlay"></div>
+
+    <!-- Main Application UI -->
+    <div class="app-layout">
+        
+        <!-- Sidebar Navigation & Controls -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <div class="brand-logo">
+                        <i data-lucide="cpu" class="brand-icon"></i>
+                    </div>
+                    <div class="brand-info">
+                        <h1>AURA <span>3D</span></h1>
+                        <span class="version-tag">AI CORE v2.5</span>
+                    </div>
+                </div>
+                <button class="btn-icon mobile-only" id="close-sidebar-btn" aria-label="Menuni yopish">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <!-- AI Persona Selector -->
+            <div class="sidebar-section">
+                <label class="section-title"><i data-lucide="bot"></i> AI PERSONA</label>
+                <div class="persona-grid">
+                    <button class="persona-card active" data-persona="general">
+                        <div class="persona-icon"><i data-lucide="sparkles"></i></div>
+                        <div class="persona-meta">
+                            <span class="persona-name">Aura Cyber</span>
+                            <span class="persona-desc">Umumiy aqlli yordamchi</span>
+                        </div>
+                    </button>
+                    <button class="persona-card" data-persona="developer">
+                        <div class="persona-icon"><i data-lucide="code-2"></i></div>
+                        <div class="persona-meta">
+                            <span class="persona-name">Dev Master</span>
+                            <span class="persona-desc">Dasturlash va kod muhandisi</span>
+                        </div>
+                    </button>
+                    <button class="persona-card" data-persona="designer">
+                        <div class="persona-icon"><i data-lucide="palette"></i></div>
+                        <div class="persona-meta">
+                            <span class="persona-name">Visual Artist</span>
+                            <span class="persona-desc">3D Dizayn va UI/UX mutaxassisi</span>
+                        </div>
+                    </button>
+                    <button class="persona-card" data-persona="tutor">
+                        <div class="persona-icon"><i data-lucide="graduation-cap"></i></div>
+                        <div class="persona-meta">
+                            <span class="persona-name">Prof. Nexus</span>
+                            <span class="persona-desc">Bilim va ilm-fan ustoz</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3D Avatar Customizer Controls -->
+            <div class="sidebar-section">
+                <label class="section-title"><i data-lucide="box"></i> 3D VISUAL REJIM</label>
+                <div class="visual-controls">
+                    <div class="control-row">
+                        <span>Model Turi:</span>
+                        <select id="avatar-type-select" class="custom-select">
+                            <option value="cyber-orb">Cyber Matrix Orb</option>
+                            <option value="quantum-head">Quantum Cyber Head</option>
+                            <option value="hologram-cube">Hologram Energy Core</option>
+                            <option value="plasma-torus">Plasma Reactor</option>
+                        </select>
+                    </div>
+                    <div class="control-row">
+                        <span>Rang Temasi:</span>
+                        <div class="color-presets">
+                            <button class="color-btn active" data-color="#00f3ff" style="background: #00f3ff" title="Cyan Cyber"></button>
+                            <button class="color-btn" data-color="#ff007f" style="background: #ff007f" title="Neon Purple"></button>
+                            <button class="color-btn" data-color="#00ff88" style="background: #00ff88" title="Matrix Emerald"></button>
+                            <button class="color-btn" data-color="#ffaa00" style="background: #ffaa00" title="Solar Gold"></button>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <span>Simli Vizual (Wireframe):</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="wireframe-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="control-row">
+                        <span>Avto Aylanish:</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autorotate-toggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings & API Config -->
+            <div class="sidebar-section">
+                <label class="section-title"><i data-lucide="settings"></i> SOZLAMALAR</label>
+                <div class="setting-item">
+                    <span>Ovozli Javob (TTS):</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="tts-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <span>Ovoz Effektlari (UI FX):</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="sfx-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <span>Til (Language):</span>
+                    <select id="lang-select" class="custom-select">
+                        <option value="uz" selected>O'zbekcha</option>
+                        <option value="en">English</option>
+                        <option value="ru">Русский</option>
+                    </select>
+                </div>
+                
+                <!-- API Key Integration Trigger -->
+                <button class="btn-secondary" id="api-modal-trigger">
+                    <i data-lucide="key"></i> OpenAI / Gemini API Ulash
+                </button>
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <button class="btn-danger-light" id="clear-chat-btn">
+                    <i data-lucide="trash-2"></i> Tarixni Tozalash
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-viewport">
+            
+            <!-- Top Navigation Header -->
+            <header class="chat-header">
+                <div class="header-left">
+                    <button class="btn-icon" id="open-sidebar-btn" aria-label="Menuni ochish">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <div class="ai-status-indicator">
+                        <div class="status-pulse idle" id="status-pulse-dot"></div>
+                        <div class="status-info">
+                            <span class="status-title" id="current-persona-title">Aura Cyber AI</span>
+                            <span class="status-state" id="status-state-text">3D Interaktiv Rejimda</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header-actions">
+                    <button class="btn-glass" id="toggle-3d-view" title="3D Ko'rinishni Kengaytirish">
+                        <i data-lucide="maximize-2"></i> <span class="desktop-only">3D Rejim</span>
+                    </button>
+                    <button class="btn-glass" id="export-chat-btn" title="Chatni yuklab olish">
+                        <i data-lucide="download"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Chat Messages Display -->
+            <div class="messages-container" id="messages-container">
+                <!-- Welcome Message Card -->
+                <div class="welcome-card">
+                    <div class="welcome-badge">
+                        <i data-lucide="zap"></i> NEXT-GEN AI CHAT
+                    </div>
+                    <h2>Salom! Men <span class="gradient-text">AURA 3D</span> Sun'iy Intellektman.</h2>
+                    <p>Menga istalgan savol bering, kod yozishda yordam so'rang yoki 3D avatarni interaktiv boshqaring!</p>
+
+                    <!-- Quick Suggestions -->
+                    <div class="suggestion-chips">
+                        <button class="chip" data-prompt="Menga sun'iy intellekt va 3D grafika kelajagi haqida gapirib ber.">
+                            <i data-lucide="sparkles"></i> AI va 3D Kelajagi
+                        </button>
+                        <button class="chip" data-prompt="JavaScript va Three.js yordamida qanday 3D o'yin yaratish mumkin?">
+                            <i data-lucide="code"></i> Three.js O'yin Yaratish
+                        </button>
+                        <button class="chip" data-prompt="Dasturlashni o'rganish uchun eng yaxshi 5 ta maslahat ber.">
+                            <i data-lucide="lightbulb"></i> Dasturlash Maslahatlari
+                        </button>
+                        <button class="chip" data-prompt="Menga chiroyli o'zbekcha she'r yozib ber.">
+                            <i data-lucide="feather"></i> Ijodiy She'r
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Messages stream dynamically added here -->
+            </div>
+
+            <!-- Typing/Speech Audio Status Floating Bar -->
+            <div class="audio-visualizer-bar hidden" id="audio-visualizer-bar">
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <span id="audio-status-label">AI Ovozli Javob Bermoqda...</span>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-container">
+                <form id="chat-form" class="chat-input-form">
+                    <button type="button" class="btn-input-action" id="mic-btn" title="Ovozli kiritish">
+                        <i data-lucide="mic"></i>
+                    </button>
+
+                    <div class="textarea-wrapper">
+                        <textarea 
+                            id="user-input" 
+                            placeholder="AURA 3D ga savol bering... (Enter: yuborish, Shift+Enter: yangi qator)" 
+                            rows="1"
+                            maxlength="2000"
+                        ></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-send" id="send-btn" title="Yuborish">
+                        <i data-lucide="send"></i>
+                    </button>
+                </form>
+                <div class="input-footer">
+                    <span>AURA 3D v2.5 • Powered by Three.js & Modern Web AI</span>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- API Modal for Custom OpenAI / Gemini Keys -->
+    <div class="modal-overlay hidden" id="api-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i data-lucide="key"></i> API Kalit Integratsiyasi</h3>
+                <button class="btn-icon" id="close-api-modal"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>O'zingizning shaxsiy OpenAI yoki Gemini API kalitingizni kiriting. Aks holda, ilova tekin simulyatsiya AI dvigatelidan foydalanadi.</p>
+                
+                <div class="form-group">
+                    <label>Provayder:</label>
+                    <select id="api-provider-select" class="custom-select full-width">
+                        <option value="simulated">Simulyatsiya qilingan AI (Tekinga, cheksiz)</option>
+                        <option value="openai">OpenAI (GPT-4o / GPT-3.5 Turbo)</option>
+                        <option value="gemini">Google Gemini API</option>
+                    </select>
+                </div>
+
+                <div class="form-group hidden" id="api-key-group">
+                    <label>API Key:</label>
+                    <input type="password" id="api-key-input" class="custom-input" placeholder="sk-... yoki AIzaSy..." />
+                    <small class="help-text">Kalitingiz faqat brauzeringiz xotirasida (LocalStorage) xavfsiz saqlanadi.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancel-api-btn">Bekor qilish</button>
+                <button class="btn-primary" id="save-api-btn">Saqlash</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Dependencies JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+    <!-- Application Modules -->
+    <script src="js/audio-manager.js"></script>
+    <script src="js/ai-engine.js"></script>
+    <script src="js/three-scene.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
